@@ -16,4 +16,14 @@ abstract public class FullSpeed implements Planner {
 			}
 		}
 	}
+
+	public static class Right extends FullSpeed {
+		public double getAhead() {
+			return 0;
+		}
+
+		public double getRight() {
+			return Double.POSITIVE_INFINITY;
+		}
+	}
 }

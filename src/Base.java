@@ -1,17 +1,20 @@
 package sharkodlak.robocode;
 
-//import java.awt.Color;
+import java.awt.*;
 import robocode.*;
 import robocode.util.*;
 import sharkodlak.robocode.*;
 import sharkodlak.robocode.gunner.*;
 //import sharkodlak.robocode.navigator.*;
+import sharkodlak.robocode.misc.*;
 import sharkodlak.robocode.planner.*;
 import sharkodlak.robocode.radar.*;
 
 /** Base - a foundation for robots by Pavel Štětina
  */
 abstract public class Base extends AdvancedRobot {
+	protected boolean aimed = false;
+	protected double evasiveBearing = Double.NaN;
 	protected sharkodlak.robocode.misc.BattleRules battleRules;
 	protected RobotStatus robotStatus;
 	protected double scannedX, scannedY;
@@ -33,10 +36,13 @@ abstract public class Base extends AdvancedRobot {
 			Gunner gunner = getGunner()
 				.setRobotStatus(robotStatus)
 				.setTarget(scannedX, scannedY);
+			aimed = gunner.isAimed();
 			double gunRightTurn = gunner.getRight(robotRightTurn);
 			setTurnGunRightRadians(gunRightTurn);
-			if (gunner.isAimed()) {
-				setFire(gunner.getBulletPower());
+			if (aimed && getGunHeat() == 0) {
+				double bulletPower = gunner.getBulletPower();
+				setFire(bulletPower);
+				gunner.fire(bulletPower);
 			}
 			setTurnRadarRightRadians(getRadarOperator()
 				.setRobotStatus(robotStatus)
@@ -45,6 +51,7 @@ abstract public class Base extends AdvancedRobot {
 			);
 			mainLoop();
 			execute();
+			evasiveBearing = evasiveBearing > 0 ? evasiveBearing - robotRightTurn : Double.NaN;
 		}
 	}
 
@@ -70,6 +77,33 @@ abstract public class Base extends AdvancedRobot {
 		return sharkodlak.robocode.radar.Rules.isEnoughTimeToAim(getGunHeat(), battleRules.getGunCoolingRate());
 	}
 
+	public void onHitRobot(HitRobotEvent event) {
+		evasiveBearing = Round.PERPENDICULAR + event.getBearingRadians();
+	}
+
+	public void onHitWall(HitWallEvent event) {
+		evasiveBearing = Round.PERPENDICULAR + event.getBearingRadians();
+	}
+
+	public void onPaint(Graphics2D g) {
+		double MAX_LINE = battleRules.getBattlefieldWidth() + battleRules.getBattleFieldHeight();
+		g.setColor(java.awt.Color.RED);
+		g.drawRect((int) Math.round(scannedX - 18), (int) Math.round(scannedY - 18), 36, 36);
+		//out.println("aimed.onPaint: " + (aimed ? "true" : "false"));
+		g.setColor(aimed ? java.awt.Color.GREEN : java.awt.Color.RED);
+		g.drawLine(
+			(int) getX(),
+			(int) getY(),
+			(int) (getX() + Math.sin(getGunHeadingRadians()) * MAX_LINE),
+			(int) (getY() + Math.cos(getGunHeadingRadians()) * MAX_LINE)
+		);
+		g.setColor(java.awt.Color.YELLOW);
+		//g.drawRect((int) Math.round(getX() - 18), (int) Math.round(getY() - 18), 36, 36);
+		g.setColor(java.awt.Color.GREEN);
+		//g.drawLine((int) nextX - 18, (int) nextY - 18, (int) nextX + 18, (int) nextY + 18);
+		//g.drawLine((int) nextX - 18, (int) nextY + 18, (int) nextX + 18, (int) nextY - 18);
+	}
+
 	public void onScannedRobot(ScannedRobotEvent event) {
 		double targetAngle = Utils.normalAbsoluteAngle(getHeadingRadians() + event.getBearingRadians());
 		double distance = event.getDistance();
@@ -77,7 +111,7 @@ abstract public class Base extends AdvancedRobot {
 		scannedY = getY() + Math.cos(targetAngle) * distance;
 	}
 
-	public void onStatus(StatusEvent e) {
-		robotStatus = e.getStatus();
+	public void onStatus(StatusEvent event) {
+		robotStatus = event.getStatus();
 	}
 }

@@ -3,6 +3,10 @@ package sharkodlak.robocode.gunner;
 import robocode.*;
 
 abstract public class Spin implements Gunner {
+	public Gunner fire(double energy) {
+		return this;
+	}
+
 	public double getBulletPower() {
 		return Double.NaN;
 	}

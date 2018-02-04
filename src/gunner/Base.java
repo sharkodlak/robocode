@@ -6,6 +6,7 @@ import robocode.util.*;
 abstract public class Base implements Gunner {
 	protected double aimAcceptableDeviation = Double.NaN;
 	protected boolean aimed = false;
+	protected java.io.PrintStream out;
 	protected RobotStatus robotStatus;
 	protected double targetPositionX, targetPositionY;
 
@@ -15,6 +16,11 @@ abstract public class Base implements Gunner {
 
 	public Base(double aimAcceptableDeviation) {
 		this.aimAcceptableDeviation = aimAcceptableDeviation;
+	}
+
+	public Gunner fire(double energy) {
+		aimed = false;
+		return this;
 	}
 
 	public double getBulletPower() {
@@ -37,6 +43,11 @@ abstract public class Base implements Gunner {
 	public Gunner setTarget(double x, double y) {
 		targetPositionX = x;
 		targetPositionY = y;
+		return this;
+	}
+
+	public Gunner setOut(java.io.PrintStream out) {
+		this.out = out;
 		return this;
 	}
 }
