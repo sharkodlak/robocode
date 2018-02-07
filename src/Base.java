@@ -1,6 +1,7 @@
 package sharkodlak.robocode;
 
 import java.awt.*;
+import java.util.*;
 import robocode.*;
 import robocode.util.*;
 import sharkodlak.robocode.*;
@@ -17,7 +18,8 @@ abstract public class Base extends AdvancedRobot {
 	protected double evasiveBearing = Double.NaN;
 	protected sharkodlak.robocode.misc.BattleRules battleRules;
 	protected RobotStatus robotStatus;
-	protected double scannedX, scannedY;
+	protected java.util.List<Map.Entry<String, java.util.List<Position>>> scans = new ArrayList<>();
+	private java.util.List<Position> nullArrayList = new ArrayList<>();
 
 	final public void run() {
 		battleRules = new sharkodlak.robocode.misc.BattleRules(
@@ -29,6 +31,16 @@ abstract public class Base extends AdvancedRobot {
 		);
 		init();
 		while (true) {
+			double scannedX = Double.NaN, scannedY = Double.NaN;
+			try {
+				java.util.List<Position> positions = scans.get(0).getValue();
+				Position position = positions.get(positions.size() - 1);
+				scannedX = position.getX();
+				scannedY = position.getY();
+			} catch (IndexOutOfBoundsException e) {
+				// don't do anythink
+				out.println(e);
+			}
 			Planner planner = getPlanner();
 			setAhead(planner.getAhead());
 			double robotRightTurn = sharkodlak.robocode.planner.Rules.getRight(planner.getRight(), robotStatus.getVelocity());
@@ -88,7 +100,15 @@ abstract public class Base extends AdvancedRobot {
 	public void onPaint(Graphics2D g) {
 		double MAX_LINE = battleRules.getBattlefieldWidth() + battleRules.getBattleFieldHeight();
 		g.setColor(java.awt.Color.RED);
-		g.drawRect((int) Math.round(scannedX - 18), (int) Math.round(scannedY - 18), 36, 36);
+		try {
+			java.util.List<Position> positions = scans.get(0).getValue();
+			Position position = positions.get(positions.size() - 1);
+			double scannedX = position.getX();
+			double scannedY = position.getY();
+			g.drawRect((int) Math.round(scannedX - 18), (int) Math.round(scannedY - 18), 36, 36);
+		} catch (IndexOutOfBoundsException e) {
+			// don't do anythink
+		}
 		//out.println("aimed.onPaint: " + (aimed ? "true" : "false"));
 		g.setColor(aimed ? java.awt.Color.GREEN : java.awt.Color.RED);
 		g.drawLine(
@@ -107,8 +127,26 @@ abstract public class Base extends AdvancedRobot {
 	public void onScannedRobot(ScannedRobotEvent event) {
 		double targetAngle = Utils.normalAbsoluteAngle(getHeadingRadians() + event.getBearingRadians());
 		double distance = event.getDistance();
-		scannedX = getX() + Math.sin(targetAngle) * distance;
-		scannedY = getY() + Math.cos(targetAngle) * distance;
+		String robotName = event.getName();
+		boolean inScans = false;
+		Position position = new Position(
+			getX() + Math.sin(targetAngle) * distance,
+			getY() + Math.cos(targetAngle) * distance
+		);
+		java.util.List<Position> positionList = nullArrayList;
+		for (Map.Entry<String, java.util.List<Position>> entry : scans) {
+			if (entry.getKey().equals(robotName)) {
+				inScans = true;
+				positionList = entry.getValue();
+				break;
+			}
+		}
+		if (!inScans) {
+			positionList = new ArrayList<>();
+			Map.Entry<String, java.util.List<Position>> robotPositions = new AbstractMap.SimpleImmutableEntry<>(robotName, positionList);
+			scans.add(robotPositions);
+		}
+		positionList.add(position);
 	}
 
 	public void onStatus(StatusEvent event) {
