@@ -5,6 +5,7 @@ import java.util.*;
 import robocode.*;
 import robocode.util.*;
 import sharkodlak.robocode.*;
+import sharkodlak.robocode.commander.*;
 import sharkodlak.robocode.gunner.*;
 //import sharkodlak.robocode.navigator.*;
 import sharkodlak.robocode.misc.*;
@@ -15,10 +16,11 @@ import sharkodlak.robocode.radar.*;
  */
 abstract public class Base extends AdvancedRobot {
 	protected boolean aimed = false;
+	protected Commander commander;
 	protected double evasiveBearing = Double.NaN;
 	protected sharkodlak.robocode.misc.BattleRules battleRules;
 	protected RobotStatus robotStatus;
-	protected java.util.List<Map.Entry<String, java.util.List<Position>>> scans = new ArrayList<>();
+	protected RobotsPositions robotsPositions = new RobotsPositions();
 	private java.util.List<Position> nullArrayList = new ArrayList<>();
 
 	final public void run() {
@@ -33,13 +35,12 @@ abstract public class Base extends AdvancedRobot {
 		while (true) {
 			double scannedX = Double.NaN, scannedY = Double.NaN;
 			try {
-				java.util.List<Position> positions = scans.get(0).getValue();
+				java.util.List<Position> positions = robotsPositions.get(0).getValue();
 				Position position = positions.get(positions.size() - 1);
 				scannedX = position.getX();
 				scannedY = position.getY();
 			} catch (IndexOutOfBoundsException e) {
 				// don't do anythink
-				out.println(e);
 			}
 			Planner planner = getPlanner();
 			setAhead(planner.getAhead());
@@ -101,7 +102,7 @@ abstract public class Base extends AdvancedRobot {
 		double MAX_LINE = battleRules.getBattlefieldWidth() + battleRules.getBattleFieldHeight();
 		g.setColor(java.awt.Color.RED);
 		try {
-			java.util.List<Position> positions = scans.get(0).getValue();
+			java.util.List<Position> positions = robotsPositions.get(0).getValue();
 			Position position = positions.get(positions.size() - 1);
 			double scannedX = position.getX();
 			double scannedY = position.getY();
@@ -127,26 +128,11 @@ abstract public class Base extends AdvancedRobot {
 	public void onScannedRobot(ScannedRobotEvent event) {
 		double targetAngle = Utils.normalAbsoluteAngle(getHeadingRadians() + event.getBearingRadians());
 		double distance = event.getDistance();
-		String robotName = event.getName();
-		boolean inScans = false;
-		Position position = new Position(
+		robotsPositions.add(
+			event.getName(),
 			getX() + Math.sin(targetAngle) * distance,
 			getY() + Math.cos(targetAngle) * distance
 		);
-		java.util.List<Position> positionList = nullArrayList;
-		for (Map.Entry<String, java.util.List<Position>> entry : scans) {
-			if (entry.getKey().equals(robotName)) {
-				inScans = true;
-				positionList = entry.getValue();
-				break;
-			}
-		}
-		if (!inScans) {
-			positionList = new ArrayList<>();
-			Map.Entry<String, java.util.List<Position>> robotPositions = new AbstractMap.SimpleImmutableEntry<>(robotName, positionList);
-			scans.add(robotPositions);
-		}
-		positionList.add(position);
 	}
 
 	public void onStatus(StatusEvent event) {
