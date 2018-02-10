@@ -1,6 +1,6 @@
 package sharkodlak.robocode;
 
-import java.awt.*;
+import java.awt.Graphics2D;
 import java.util.*;
 import robocode.*;
 import robocode.util.*;
@@ -19,9 +19,9 @@ abstract public class Base extends AdvancedRobot {
 	protected Commander commander;
 	protected double evasiveBearing = Double.NaN;
 	protected sharkodlak.robocode.misc.BattleRules battleRules;
-	protected RobotStatus robotStatus;
-	protected RobotsPositions robotsPositions = new RobotsPositions();
-	private java.util.List<Position> nullArrayList = new ArrayList<>();
+	protected robocode.RobotStatus robotStatus;
+	protected RobotsStatuses robotsStatuses;
+	double scannedX = Double.NaN, scannedY = Double.NaN;
 
 	final public void run() {
 		battleRules = new sharkodlak.robocode.misc.BattleRules(
@@ -31,16 +31,17 @@ abstract public class Base extends AdvancedRobot {
 			this.getGunCoolingRate(),
 			this.getSentryBorderSize()
 		);
+		robotsStatuses = new RobotsStatuses(robotStatus.getOthers(), out);
 		init();
 		while (true) {
-			double scannedX = Double.NaN, scannedY = Double.NaN;
-			try {
-				java.util.List<Position> positions = robotsPositions.get(0).getValue();
-				Position position = positions.get(positions.size() - 1);
-				scannedX = position.getX();
-				scannedY = position.getY();
-			} catch (IndexOutOfBoundsException e) {
-				// don't do anythink
+			for (Map.Entry<String, List<sharkodlak.robocode.misc.RobotStatus>> robotStatusesEntry : robotsStatuses) {
+				List<sharkodlak.robocode.misc.RobotStatus> robotStatuses = robotStatusesEntry.getValue();
+				sharkodlak.robocode.misc.RobotStatus robotStatus = robotStatuses.get(robotStatuses.size() - 1);
+				if (robotStatus.getEnergy() >= 0) {
+					scannedX = robotStatus.getX();
+					scannedY = robotStatus.getY();
+					break;
+				}
 			}
 			Planner planner = getPlanner();
 			setAhead(planner.getAhead());
@@ -78,7 +79,7 @@ abstract public class Base extends AdvancedRobot {
 		return battleRules;
 	}
 
-	protected RobotStatus getRobotStatus() {
+	protected robocode.RobotStatus getRobotStatus() {
 		return robotStatus;
 	}
 
@@ -101,16 +102,7 @@ abstract public class Base extends AdvancedRobot {
 	public void onPaint(Graphics2D g) {
 		double MAX_LINE = battleRules.getBattlefieldWidth() + battleRules.getBattleFieldHeight();
 		g.setColor(java.awt.Color.RED);
-		try {
-			java.util.List<Position> positions = robotsPositions.get(0).getValue();
-			Position position = positions.get(positions.size() - 1);
-			double scannedX = position.getX();
-			double scannedY = position.getY();
-			g.drawRect((int) Math.round(scannedX - 18), (int) Math.round(scannedY - 18), 36, 36);
-		} catch (IndexOutOfBoundsException e) {
-			// don't do anythink
-		}
-		//out.println("aimed.onPaint: " + (aimed ? "true" : "false"));
+		g.drawRect((int) Math.round(scannedX - 18), (int) Math.round(scannedY - 18), 36, 36);
 		g.setColor(aimed ? java.awt.Color.GREEN : java.awt.Color.RED);
 		g.drawLine(
 			(int) getX(),
@@ -125,13 +117,21 @@ abstract public class Base extends AdvancedRobot {
 		//g.drawLine((int) nextX - 18, (int) nextY + 18, (int) nextX + 18, (int) nextY - 18);
 	}
 
+	public void onRobotDeath(RobotDeathEvent event) {
+		robotsStatuses.setDeath(event.getName(), event.getTime());
+	}
+
 	public void onScannedRobot(ScannedRobotEvent event) {
 		double targetAngle = Utils.normalAbsoluteAngle(getHeadingRadians() + event.getBearingRadians());
 		double distance = event.getDistance();
-		robotsPositions.add(
+		robotsStatuses.setStatus(
 			event.getName(),
 			getX() + Math.sin(targetAngle) * distance,
-			getY() + Math.cos(targetAngle) * distance
+			getY() + Math.cos(targetAngle) * distance,
+			event.getHeadingRadians(),
+			event.getVelocity(),
+			event.getEnergy(),
+			event.getTime()
 		);
 	}
 
