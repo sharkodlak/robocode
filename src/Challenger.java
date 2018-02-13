@@ -10,6 +10,7 @@ import sharkodlak.robocode.radar.*;
 /** Challenger - a robot by Pavel Štětina
  */
 public class Challenger extends Base {
+	private static double MAX_FIRING_RANGE = 300;
 	protected Planner aheadRightPlanner, rightPlanner;
 	protected Gunner aimGunner, spinGunner;
 	//protected Navigator navigator;
@@ -19,7 +20,7 @@ public class Challenger extends Base {
 		setColors(Color.white, Color.white, Color.white, Color.white, Color.white);
 		aheadRightPlanner = new FullSpeed.Ahead.Right();
 		rightPlanner = new FullSpeed.Right();
-		aimGunner = new sharkodlak.robocode.gunner.Aim();
+		aimGunner = new sharkodlak.robocode.gunner.Aim.Proximity(MAX_FIRING_RANGE);
 		spinGunner = new sharkodlak.robocode.gunner.Spin.Right();
 		aimRadarOperator = new sharkodlak.robocode.radar.Aim();
 		spinRadarOperator = new sharkodlak.robocode.radar.Spin.Right();

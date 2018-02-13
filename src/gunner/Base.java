@@ -4,19 +4,10 @@ import robocode.*;
 import robocode.util.*;
 
 abstract public class Base implements Gunner {
-	protected double aimAcceptableDeviation = Double.NaN;
 	protected boolean aimed = false;
 	protected java.io.PrintStream out;
 	protected RobotStatus robotStatus;
 	protected double targetPositionX, targetPositionY;
-
-	public Base() {
-		this(AIM_ACCEPTABLE_DEVIATION);
-	}
-
-	public Base(double aimAcceptableDeviation) {
-		this.aimAcceptableDeviation = aimAcceptableDeviation;
-	}
 
 	public Gunner fire(double energy) {
 		aimed = false;
