@@ -14,14 +14,4 @@ public class Lefter implements Planner {
 	public double getRight() {
 		return -instance.getRight();
 	}
-
-	public Planner setRobotStatus(RobotStatus robotStatus) {
-		instance.setRobotStatus(robotStatus);
-		return this;
-	}
-
-	public Planner setDestination(double x, double y) {
-		instance.setDestination(x, y);
-		return this;
-	}
 }

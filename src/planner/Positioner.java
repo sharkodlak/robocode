@@ -6,7 +6,7 @@ import sharkodlak.robocode.misc.*;
 public class Positioner implements Planner {
 	protected robocode.RobotStatus robotStatus;
 	protected double destinationX, destinationY;
-	private double direction = 1;
+	protected double direction = 1;
 
 	public double getAhead() {
 		return direction * Position.getTargetDistance(robotStatus, destinationX, destinationY);
@@ -22,14 +22,56 @@ public class Positioner implements Planner {
 		return bearing;
 	}
 
-	public Planner setRobotStatus(robocode.RobotStatus robotStatus) {
+	public Positioner setRobotStatusAndDestination(robocode.RobotStatus robotStatus, double x, double y) {
+		setRobotStatus(robotStatus);
+		return setDestination(x, y);
+	}
+
+	public Positioner setRobotStatus(robocode.RobotStatus robotStatus) {
 		this.robotStatus = robotStatus;
 		return this;
 	}
 
-	public Planner setDestination(double x, double y) {
+	public Positioner setDestination(double x, double y) {
 		destinationX = x;
 		destinationY = y;
 		return this;
+	}
+
+	public static class Closer extends Positioner {
+		private double rangeMax, rangeMin;
+		private double ahead;
+		private boolean closing = false;
+
+		public Closer(double rangeMax, double rangeMin) {
+			if (rangeMax < rangeMin) {
+				throw new IllegalArgumentException(String.format(
+					"Argument rangeMax must be greater or equal to rangeMin, %.2f and %.2f given.",
+					rangeMax,
+					rangeMin
+				));
+			}
+			this.rangeMax = rangeMax;
+			this.rangeMin = rangeMin;
+		}
+
+		public double getAhead() {
+			return ahead;
+		}
+
+		public boolean isClosing() {
+			return closing;
+		}
+
+		public Closer setRobotStatusAndDestination(robocode.RobotStatus robotStatus, double x, double y) {
+			super.setRobotStatusAndDestination(robotStatus, x, y);
+			ahead = super.getAhead();
+			if (Math.abs(ahead) > rangeMax) {
+				closing = true;
+			} else if (Math.abs(ahead) < rangeMin) {
+				closing = false;
+			}
+			return this;
+		}
 	}
 }
