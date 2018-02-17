@@ -10,8 +10,8 @@ import sharkodlak.robocode.radar.*;
 /** Challenger - a robot by Pavel Štětina
  */
 public class Challenger extends Base {
-	private static double FIRING_RANGE_MAX = 300, FIRING_RANGE_MIN = 150, CLOSING_RANGE_MAX = 300, CLOSING_RANGE_MIN = 150;
-	protected Planner activePlanner, aheadRightPlanner, rightPlanner;
+	private static double FIRING_RANGE_MAX = 300, FIRING_RANGE_MIN = 150, CLOSING_RANGE_MAX = 350, CLOSING_RANGE_MIN = 150;
+	protected Planner aheadRightPlanner, rightPlanner;
 	protected Positioner.Closer closerPlanner;
 	protected Gunner aimGunner, spinGunner;
 	//protected Navigator navigator;
@@ -38,12 +38,11 @@ public class Challenger extends Base {
 	}
 
 	protected Planner getPlanner() {
+		Planner activePlanner = aheadRightPlanner;
 		if (evasiveBearing > 0) {
 			activePlanner = rightPlanner;
 		} else if (closerPlanner.setRobotStatusAndDestination(robotStatus, scannedX, scannedY).isClosing()) {
 			activePlanner = closerPlanner;
-		} else {
-			activePlanner = aheadRightPlanner;
 		}
 		return activePlanner;
 	}
