@@ -1,6 +1,16 @@
 package sharkodlak.robocode.planner;
 
+import robocode.*;
+
 abstract public class FullSpeed implements Planner {
+	public Planner setRobotStatus(RobotStatus robotStatus) {
+		return this;
+	}
+
+	public Planner setDestination(double x, double y) {
+		return this;
+	}
+
 	public static class Ahead extends FullSpeed {
 		public double getAhead() {
 			return Double.POSITIVE_INFINITY;

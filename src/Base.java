@@ -43,7 +43,9 @@ abstract public class Base extends AdvancedRobot {
 					break;
 				}
 			}
-			Planner planner = getPlanner();
+			Planner planner = getPlanner()
+				.setRobotStatus(robotStatus)
+				.setDestination(scannedX, scannedY);
 			setAhead(planner.getAhead());
 			double robotRightTurn = sharkodlak.robocode.planner.Rules.getRight(planner.getRight(), robotStatus.getVelocity());
 			setTurnRightRadians(robotRightTurn);
