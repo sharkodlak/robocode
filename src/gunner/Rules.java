@@ -1,6 +1,6 @@
 package sharkodlak.robocode.gunner;
 
-import robocode.*;
+import sharkodlak.geometry.Round;
 
 public class Rules {
 	public static boolean isEnoughTimeToAim(double gunHeat, double gunCoolingRate) {
@@ -12,6 +12,6 @@ public class Rules {
 	}
 
 	public static double getHalfRoundTurnTime() {
-		return sharkodlak.robocode.misc.Round.HALF_ROUND / robocode.Rules.GUN_TURN_RATE_RADIANS;
+		return Round.HALF_ROUND / robocode.Rules.GUN_TURN_RATE_RADIANS;
 	}
 }

@@ -1,0 +1,1 @@
+java -cp "$CLASSPATH;C:\Program Files\jUnit\junit-4.10.jar;C:\Program Files\Java\jre7\lib\rt.jar;C:\Program Files\robocode\libs\robocode.jar;D:\src\git\robocode" org.junit.runner.JUnitCore sharkodlak.robocode.tests.AllTests
