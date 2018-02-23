@@ -7,7 +7,7 @@ import sharkodlak.robocode.misc.*;
 public class Aim extends Base {
 	public double getRight(double robotRightTurn) {
 		double nextGunHeading = robotStatus.getGunHeadingRadians() + robotRightTurn;
-		double gunBearing = Position.getTargetBearing(robotStatus, targetPositionX, targetPositionY, nextGunHeading);
+		double gunBearing = Position.getBearing(robotStatus, targetPositionX, targetPositionY, nextGunHeading);
 		aimed = Math.abs(gunBearing) < robocode.Rules.GUN_TURN_RATE_RADIANS;
 		return gunBearing;
 	}
@@ -42,7 +42,7 @@ public class Aim extends Base {
 		}
 
 		public double getBulletPower() {
-			double targetDistance = Position.getTargetDistance(robotStatus, targetPositionX, targetPositionY);
+			double targetDistance = Position.getDistance(robotStatus, targetPositionX, targetPositionY);
 			double variableDistance = maxFiringDistance - minFullPowerDistance;
 			double chanceToHit = 1 - (targetDistance - minFullPowerDistance) / variableDistance;
 			super.setChanceToHit(sharkodlak.robocode.misc.Rules.normalizeProbability(chanceToHit));

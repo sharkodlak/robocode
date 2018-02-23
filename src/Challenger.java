@@ -26,7 +26,6 @@ public class Challenger extends Base {
 		spinGunner = new sharkodlak.robocode.gunner.Spin.Right();
 		aimRadarOperator = new sharkodlak.robocode.radar.Aim();
 		spinRadarOperator = new sharkodlak.robocode.radar.Spin.Right();
-		//out.println("STATUS time:" + robotStatus.getTime() + ", gunHeat: " + robotStatus.getGunHeat());
 	}
 
 	protected void mainLoop() {
